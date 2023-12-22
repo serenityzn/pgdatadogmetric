@@ -27,13 +27,11 @@ func startRouter(app dbApp) error {
 	r.Get("/v1/health", getHealth)
 	r.Get("/v1/mgmt/connections", getConnections)
 	r.Get("/v1/mgmt/count", getCount)
-
-	r.Put("/v1/mgmt/loglevel/{level}", setLogLevel)
-
-	err := http.ListenAndServe(":8080", r)
-	if err != nil {
-		return err
-	}
+	r.Post("/v1/mgmt/exit", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Exiting"))
+		log.WithFields(log.Fields{
+			"LogLevel": "info",
+		}).Info("Exiting")git 
 
 	return nil
 }
@@ -52,6 +50,9 @@ func getHealth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	if sysStat.DbStatus == "no connection" {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}
 	w.Write(response)
 	log.WithFields(log.Fields{
 		"LogLevel": "debug",

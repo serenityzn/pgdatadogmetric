@@ -27,6 +27,7 @@ type systemConfig struct {
 }
 
 var count int
+var exit int = 0
 var sysStat = systemConfig{}
 
 const waitTime = 5
@@ -103,6 +104,9 @@ func main() {
 	go dbRoutine(application)
 
 	for {
+		if exit == 1 {
+			break
+		}
 		time.Sleep(time.Second * 5)
 		//err = datadogSubmitMetric(float64(count))
 		//if err != nil {
