@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -14,7 +14,9 @@ func configInit() (pgConnect, error) {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Error Reading config file! [ERROR]")
+		log.WithFields(log.Fields{
+			"LogLevel": "error",
+		}).Error(err)
 		return pgConnect{}, err
 	}
 

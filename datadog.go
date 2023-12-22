@@ -49,7 +49,7 @@ func datadogSubmitMetric(count float64) error {
 	body := datadogV2.MetricPayload{
 		Series: []datadogV2.MetricSeries{
 			{
-				Metric: "MyTestPgMetric",
+				Metric: "postgresql.tpart_charge_select_count",
 				Type:   datadogV2.METRICINTAKETYPE_COUNT.Ptr(),
 				Points: []datadogV2.MetricPoint{
 					{
@@ -57,9 +57,10 @@ func datadogSubmitMetric(count float64) error {
 						Value:     datadog.PtrFloat64(count),
 					},
 				},
+
 				Resources: []datadogV2.MetricResource{
 					{
-						Name: datadog.PtrString("myTestHost12"),
+						Name: datadog.PtrString("dev-pg-master.hvprcl2dpn2ezcozamnevzvxxc.ax.internal.cloudapp.net"),
 						Type: datadog.PtrString("host"),
 					},
 				},
