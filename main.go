@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/http"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -34,7 +35,7 @@ type systemConfig struct {
 }
 
 var count int
-var exit int = 0
+var exit = 0
 var sysStat = systemConfig{}
 
 var br = dbCbreakerStruct{
@@ -85,7 +86,12 @@ func main() {
 
 	myServerContext, myServerClose = context.WithCancel(mainContext)
 
-	go startRouter(application)
+	httpSrv := managementService{
+		server: http.Server{},
+	}
+	httpSrv.serverInit()
+
+	go httpSrv.startRouter(application)
 
 	go dbRoutine(application)
 
@@ -100,7 +106,12 @@ func main() {
 				return
 			case <-ticker.C:
 				if exit == 1 {
-					myServer.Shutdown(myServerContext)
+					err := httpSrv.server.Shutdown(myServerContext)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"LogLevel": "error",
+						}).Error(err)
+					}
 					myServerClose()
 				}
 			default:
@@ -110,7 +121,7 @@ func main() {
 	}()
 
 	for {
-		if exit == 2 {
+		if exit == 1 {
 			mainContextCancel()
 			time.Sleep(time.Second * 1)
 			break

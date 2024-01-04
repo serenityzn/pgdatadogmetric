@@ -11,13 +11,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var myApp dbApp
+type managementService struct {
+	server http.Server
+}
 
-var myServer http.Server
+type databaseService dbApp
 
-func startRouter(app dbApp) {
+func (mgmtSrv *managementService) serverInit() {
+	mgmtSrv.server.Addr = ":8080"
+	mgmtSrv.server.ReadTimeout = time.Second * 10
+}
 
-	myApp = app
+func (mgmtSrv *managementService) startRouter(app dbApp) {
+
+	db := databaseService(app)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestID)
@@ -28,17 +36,13 @@ func startRouter(app dbApp) {
 
 	r.Get("/v1/version", getVersion)
 	r.Get("/v1/health", getHealth)
-	r.Get("/v1/mgmt/connections", getConnections)
+	r.Get("/v1/mgmt/connections", db.getConnections)
 	r.Get("/v1/mgmt/count", getCount)
 	r.Post("/v1/mgmt/exit", programExit)
 	r.Put("/v1/mgmt/setlog/{level}", setLogLevel)
 
-	myServer = http.Server{
-		Addr:        ":8080",
-		ReadTimeout: time.Second * 10,
-		Handler:     r,
-	}
-	err := myServer.ListenAndServe()
+	mgmtSrv.server.Handler = r
+	err := mgmtSrv.server.ListenAndServe()
 	if err != nil {
 		return
 	}
@@ -75,7 +79,7 @@ func getHealth(w http.ResponseWriter, r *http.Request) {
 	}).Debug("Health Requested")
 }
 
-func getConnections(w http.ResponseWriter, r *http.Request) {
+func (myApp *databaseService) getConnections(w http.ResponseWriter, r *http.Request) {
 	cn, err := myApp.pg.GetConnectionsCount()
 	if err != nil {
 		w.Write([]byte("Error: " + err.Error()))
@@ -89,7 +93,7 @@ func getConnections(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCount(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Connections %d", count)))
+	w.Write([]byte(fmt.Sprintf("Count %d", count)))
 	log.WithFields(log.Fields{
 		"LogLevel": "debug",
 	}).Debug("Count Requested")
