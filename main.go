@@ -106,7 +106,7 @@ func main() {
 				return
 			case <-ticker.C:
 				if exit == 1 {
-					err := httpSrv.server.Shutdown(myServerContext)
+					err = httpSrv.server.Shutdown(myServerContext)
 					if err != nil {
 						log.WithFields(log.Fields{
 							"LogLevel": "error",
