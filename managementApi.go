@@ -13,7 +13,10 @@ import (
 
 var myApp dbApp
 
-func startRouter(app dbApp) error {
+var myServer http.Server
+
+func startRouter(app dbApp) {
+
 	myApp = app
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -27,13 +30,26 @@ func startRouter(app dbApp) error {
 	r.Get("/v1/health", getHealth)
 	r.Get("/v1/mgmt/connections", getConnections)
 	r.Get("/v1/mgmt/count", getCount)
-	r.Post("/v1/mgmt/exit", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Exiting"))
-		log.WithFields(log.Fields{
-			"LogLevel": "info",
-		}).Info("Exiting")git 
+	r.Post("/v1/mgmt/exit", programExit)
+	r.Put("/v1/mgmt/setlog/{level}", setLogLevel)
 
-	return nil
+	myServer = http.Server{
+		Addr:        ":8080",
+		ReadTimeout: time.Second * 10,
+		Handler:     r,
+	}
+	err := myServer.ListenAndServe()
+	if err != nil {
+		return
+	}
+}
+
+func programExit(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Exiting"))
+	exit = 1
+	log.WithFields(log.Fields{
+		"LogLevel": "info",
+	}).Info("Exiting")
 }
 
 func getVersion(w http.ResponseWriter, r *http.Request) {

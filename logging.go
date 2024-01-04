@@ -29,6 +29,8 @@ func logInit() {
 		}).Error(err)
 	} else {
 		log.SetOutput(logfile)
+		//logfile.Close()
+		//log.SetOutput(os.Stdout)
 	}
 	log.WithFields(log.Fields{
 		"LogLevel": "info",
