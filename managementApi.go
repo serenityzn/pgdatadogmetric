@@ -89,7 +89,7 @@ func (myApp *databaseService) getConnections(w http.ResponseWriter, r *http.Requ
 	w.Write([]byte(fmt.Sprintf("Connections %d", cn)))
 	log.WithFields(log.Fields{
 		"LogLevel": "debug",
-	}).Debug("Connections Requested")
+	}).Debug("Connections Requested.")
 }
 
 func getCount(w http.ResponseWriter, r *http.Request) {
