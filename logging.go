@@ -24,16 +24,11 @@ func logInit() {
 	logfile, err := os.OpenFile("./pgdatadogmetric.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.SetOutput(os.Stdout)
-		log.WithFields(log.Fields{
-			"LogLevel": "error",
-		}).Error(err)
+		logWF("error", err.Error(), "logging.logInit")
 	} else {
 		log.SetOutput(logfile)
 		//logfile.Close()
 		//log.SetOutput(os.Stdout)
 	}
-	log.WithFields(log.Fields{
-		"LogLevel": "info",
-	}).Info("Logging Initialized")
-
+	logWF("info", "Logging Initialized", "logging.logInit")
 }
