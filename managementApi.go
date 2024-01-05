@@ -49,62 +49,50 @@ func (mgmtSrv *managementService) startRouter(app dbApp) {
 }
 
 func programExit(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Exiting"))
+	_, _ = w.Write([]byte("Exiting"))
 	exit = 1
-	log.WithFields(log.Fields{
-		"LogLevel": "info",
-	}).Info("Exiting")
+	logWF("info", "Exiting", "managementApi.programExit")
 }
 
 func getVersion(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("version 1.0.0"))
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Version Requested")
+	_, _ = w.Write([]byte("version 1.0.0"))
+	logWF("debug", "Version Requested", "managementApi.getVersion")
 }
 
 func getHealth(w http.ResponseWriter, r *http.Request) {
 	response, err := json.Marshal(sysStat)
 	if err != nil {
-		w.Write([]byte("Error: " + err.Error()))
+		_, _ = w.Write([]byte("Error: " + err.Error()))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if sysStat.DbStatus == "no connection" {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
-	w.Write(response)
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Health Requested")
+	_, _ = w.Write(response)
+	logWF("debug", "Health Requested", "managementApi.getHealth")
 }
 
 func (myApp *databaseService) getConnections(w http.ResponseWriter, r *http.Request) {
 	cn, err := myApp.pg.GetConnectionsCount()
 	if err != nil {
-		w.Write([]byte("Error: " + err.Error()))
+		_, _ = w.Write([]byte("Error: " + err.Error()))
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("Connections %d", cn)))
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Connections Requested.")
+	_, _ = w.Write([]byte(fmt.Sprintf("Connections %d", cn)))
+	logWF("debug", "Connections Requested.", "managementApi.getConnections")
 }
 
 func getCount(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Count %d", count)))
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Count Requested")
+	_, _ = w.Write([]byte(fmt.Sprintf("Count %d", count)))
+	logWF("debug", "Count Requested", "managementApi.getCount")
 }
 
 func setLogLevel(w http.ResponseWriter, r *http.Request) {
 	level := chi.URLParam(r, "level")
 	log.SetLevel(logLevelMap[level])
 	sysStat.LogLevel = level
-	w.Write([]byte(fmt.Sprintf("Log Level set to %s", level)))
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Log Level Set")
+	_, _ = w.Write([]byte(fmt.Sprintf("Log Level set to %s", level)))
+	logWF("debug", "Log Level Set", "managementApi.setLogLevel")
 }

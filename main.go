@@ -68,9 +68,9 @@ func main() {
 		return
 	} else {
 		sysStat.DbStatus = "connected"
-		log.WithFields(log.Fields{
-			"LogLevel": "info",
-		}).Info("Connected to Database [", myDatabaseConf.dbname, "] on Host [", myDatabaseConf.host, "]")
+		logWF("info",
+			fmt.Sprintf("Connected to Database [%s] on Host [%s]", myDatabaseConf.dbname, myDatabaseConf.host),
+			"main")
 	}
 
 	defer db.Close()
@@ -109,9 +109,7 @@ func main() {
 
 					err = httpSrv.server.Shutdown(myServerContext)
 					if err != nil {
-						log.WithFields(log.Fields{
-							"LogLevel": "error",
-						}).Error(err)
+						logWF("error", err.Error(), "main.shutdownTicker")
 					}
 					myServerClose()
 				}
@@ -132,10 +130,7 @@ func main() {
 		//if err != nil {
 		//		panic(err)
 		//	}
-
-		log.WithFields(log.Fields{
-			"LogLevel": "info",
-		}).Info("Count: ", count)
+		logWF("info", fmt.Sprintf("Count: %d", count), "main")
 	}
 
 }
@@ -152,16 +147,12 @@ func dbConnect(connect pgConnect) (*sql.DB, error) {
 
 	err = db.Ping()
 	if err != nil {
-		log.WithFields(log.Fields{
-			"LogLevel": "error",
-		}).Error(err)
+		logWF("error", err.Error(), "main.dbConnect")
 		return nil, err
 	}
-
-	log.WithFields(log.Fields{
-		"LogLevel": "debug",
-	}).Debug("Connected to Database [", connect.dbname, "] on Host [", connect.host, "]")
-
+	logWF("debug",
+		fmt.Sprintf("Connected to Database [%s] on Host [%s]", connect.dbname, connect.host),
+		"main.dbConnect")
 	return db, nil
 }
 
@@ -170,9 +161,7 @@ func dbRoutine(app dbApp) {
 
 		countResult, err := app.pg.GetCount()
 		if err != nil {
-			log.WithFields(log.Fields{
-				"LogLevel": "error",
-			}).Error(err)
+			logWF("error", err.Error(), "main.dbRoutine")
 		}
 		count = countResult
 		time.Sleep(time.Second * waitTime)
@@ -194,10 +183,7 @@ func dbCircuitBreaker(ctx context.Context, db *sql.DB) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.WithFields(log.Fields{
-				"LogLevel": "error",
-				"System":   "dbCircuitBreaker",
-			}).Error(ctx.Err())
+			logWF("error", ctx.Err().Error(), "main.dbCircuitBreaker")
 			return
 		default:
 			for {
@@ -223,4 +209,24 @@ func dbCircuitBreaker(ctx context.Context, db *sql.DB) {
 
 	}
 
+}
+
+func logWF(logLevel string, message string, system string) {
+	switch logLevel {
+	case "info":
+		log.WithFields(log.Fields{
+			"LogLevel": logLevel,
+			"System":   system,
+		}).Info(message)
+	case "error":
+		log.WithFields(log.Fields{
+			"LogLevel": logLevel,
+			"System":   system,
+		}).Error(message)
+	case "debug":
+		log.WithFields(log.Fields{
+			"LogLevel": logLevel,
+			"System":   system,
+		}).Debug(message)
+	}
 }
