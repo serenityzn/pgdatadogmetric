@@ -21,7 +21,7 @@ func logInit() {
 	log.SetLevel(log.DebugLevel)
 	sysStat.LogLevel = "debug"
 
-	logfile, err := os.OpenFile("./pgdatadogmetric.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logfile, err := os.OpenFile("./application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.SetOutput(os.Stdout)
 		logWF("error", err.Error(), "logging.logInit")
